@@ -1,0 +1,82 @@
+import java.util.ArrayList;
+import java.util.List;
+
+// 1. Observer Interface
+interface Watcher {
+    void update(String status);
+}
+
+// 2. Concrete Observer 1: SMS (Customer's Phone)
+class SMSNotification implements Watcher {
+    private String customerName;
+
+    public SMSNotification(String customerName) {
+        this.customerName = customerName;
+    }
+
+    @Override
+    public void update(String status) {
+        System.out.println("SMS to " + customerName + ": your order is now " + status);
+    }
+}
+
+// 3. Concrete Observer 2: Kitchen Screen
+class KitchenScreen implements Watcher {
+    @Override
+    public void update(String status) {
+        System.out.println("Kitchen screen: " + status);
+    }
+}
+
+// 4. Subject / Order Class
+class Order {
+    private List<Watcher> watchers = new ArrayList<>();
+    private String status;
+
+    public void addWatcher(Watcher watcher) {
+        watchers.add(watcher);
+    }
+
+    public void removeWatcher(Watcher watcher) {
+        watchers.remove(watcher);
+    }
+
+    public void setStatus(String newStatus) {
+        this.status = newStatus;
+        System.out.println("\nOrder is now: " + status);
+        notifyWatchers();
+    }
+
+    private void notifyWatchers() {
+        // Create a copy to safely iterate while allowing modification if needed
+        for (Watcher watcher : new ArrayList<>(watchers)) {
+            watcher.update(status);
+        }
+    }
+}
+
+// 5. Main Driver Class matching the Required Output
+public class Main {
+    public static void main(String[] args) {
+        Order order = new Order();
+
+        Watcher sms = new SMSNotification("Rahim");
+        Watcher kitchen = new KitchenScreen();
+
+        // Add watchers
+        order.addWatcher(sms);
+        order.addWatcher(kitchen);
+
+        // 1. Status changes to Cooking
+        order.setStatus("Cooking");
+
+        // 2. Status changes to Out for delivery
+        order.setStatus("Out for delivery");
+
+        // 3. Notice the rule: "When the order is delivered, the kitchen is not notified."
+        // So we remove the kitchen watcher before setting status to Delivered.
+        order.removeWatcher(kitchen);
+
+        order.setStatus("Delivered");
+    }
+}
